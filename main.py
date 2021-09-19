@@ -15,45 +15,61 @@ client = commands.Bot(command_prefix="!")
 
 
 @client.command()
-async def join(ctx, url):
-    channel = ctx.message.author.voice.channel
+async def join(ctx):
+    isJoined = False
     voice = get(client.voice_clients, guild=ctx.guild)
-    print(voice)
-    if voice and voice.is_connected():
-        await voice.move_to(channel)
-    if not voice:
-        await ctx.send("Playing ")
-        voice = await channel.connect()
+
+    bot_voice = ctx.guild.voice_client
+    author_voice = ctx.author.voice
+    if bot_voice and bot_voice.is_connected():
+        if bot_voice.channel != author_voice.channel:
+            await voice.move_to(author_voice.channel)
+            await ctx.send("Moved to the voice channel")
+
+        isJoined = True
+    elif author_voice and not bot_voice:  # Author connected but bot not connected
+        voice = await author_voice.channel.connect()
+        await ctx.send("Connected to the voice channel")
+        isJoined = True
+    elif not author_voice:  # Author not connected
+        await ctx.send("Get in a voice channel")
+
+    return isJoined
 
 
 @client.command()
 async def play(ctx, *url):
-    await join(ctx, url)
+    if not await join(ctx):
+        return
+
     YDL_OPTIONS = {'format': 'bestaudio',
                    'extractaudio': True,
-                   'noplaylist': True, '--default-search': 'auto'}
+                   'noplaylist': True,
+                   }
     FFMPEG_OPTIONS = {
         'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
     voice = get(client.voice_clients, guild=ctx.guild)
 
     if not voice.is_playing():
+        result = ytVideoSearchLink(url)
         with YoutubeDL(YDL_OPTIONS) as ydl:
-            info = ydl.extract_info(ytVideoSearchLink(url), download=False)
+            info = ydl.extract_info(
+                result["link"], download=False)
         URL = info['url']
         voice.play(FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
         voice.is_playing()
-        await ctx.send('Bot is playing')
+        await ctx.send('Bot is playing' + result["title"])
+
 
 # check if the bot is already playing
     else:
-        await ctx.send("Bot is already playing")
+        await ctx.send("Bot is playing")
         return
 
 
 @client.command()
 async def resume(ctx):
     voice = get(client.voice_clients, guild=ctx.guild)
-    print(voice)
     if not voice.is_playing():
         voice.resume()
         await ctx.send("resuming")
@@ -62,16 +78,22 @@ async def resume(ctx):
 @client.command()
 async def pause(ctx):
     voice = get(client.voice_clients, guild=ctx.guild)
-    print(voice)
     if voice.is_playing():
         voice.pause()
         await ctx.send("paused")
 
 
 @client.command()
+async def skip(ctx):
+    voice = get(client.voice_clients, guild=ctx.guild)
+    if voice.is_playing():
+        voice.pause()
+        await ctx.send("skipping")
+
+
+@client.command()
 async def stop(ctx):
     voice = get(client.voice_clients, guild=ctx.guild)
-    print(voice)
     if voice.is_playing():
         voice.stop()
         await ctx.send("stopping")
@@ -92,7 +114,6 @@ async def clear(ctx, amount=5):
 
 @client.command()
 async def search(ctx, *search):
-    print(search)
     print(ytVideoSearchLink(search))
 
 
@@ -128,9 +149,8 @@ async def on_reaction_add(reaction, user):
 
 
 def ytVideoSearchLink(search):
-    print(search)
     videoSearch = VideosSearch(''.join(search), limit=1)
-    return videoSearch.result()["result"][0]["link"]
+    return videoSearch.result()["result"][0]
 
 
 client.run(os.environ.get('TOKEN'))
