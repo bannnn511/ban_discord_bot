@@ -27,7 +27,7 @@ async def join(ctx, url):
 
 
 @client.command()
-async def play(ctx, url):
+async def play(ctx, *url):
     await join(ctx, url)
     YDL_OPTIONS = {'format': 'bestaudio',
                    'extractaudio': True,
@@ -91,8 +91,9 @@ async def clear(ctx, amount=5):
 
 
 @client.command()
-async def search(ctx, search):
-    ytVideoSearchLink(search)
+async def search(ctx, *search):
+    print(search)
+    print(ytVideoSearchLink(search))
 
 
 @client.event
@@ -127,7 +128,7 @@ async def on_reaction_add(reaction, user):
 
 
 def ytVideoSearchLink(search):
-    videoSearch = VideosSearch(search, limit=1)
+    videoSearch = VideosSearch(''.join(search), limit=1)
     return videoSearch.result()["result"][0]["link"]
 
 
