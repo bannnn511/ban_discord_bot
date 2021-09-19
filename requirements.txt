@@ -2,4 +2,4 @@ discord.py
 emoji
 python-dotenv
 youtube_dl
-youtubesearchpython
+youtube-search-python
