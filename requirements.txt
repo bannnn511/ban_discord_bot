@@ -1,3 +1,5 @@
 discord.py
 emoji
 python-dotenv
+youtube_dl
+youtubesearchpython
