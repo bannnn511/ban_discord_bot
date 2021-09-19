@@ -22,7 +22,7 @@ async def join(ctx, url):
     if voice and voice.is_connected():
         await voice.move_to(channel)
     if not voice:
-        await ctx.send("Playing " + url)
+        await ctx.send("Playing ")
         voice = await channel.connect()
 
 
@@ -128,6 +128,7 @@ async def on_reaction_add(reaction, user):
 
 
 def ytVideoSearchLink(search):
+    print(search)
     videoSearch = VideosSearch(''.join(search), limit=1)
     return videoSearch.result()["result"][0]["link"]
 
