@@ -4,3 +4,4 @@ python-dotenv
 youtube_dl
 youtube-search-python
 PyNaCl
+ffmpeg
