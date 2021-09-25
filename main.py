@@ -64,7 +64,7 @@ async def play(ctx, *url):
 
         # disconnect bot after played
         while voice.is_playing():
-            await sleep(1)
+            sleep(1)
         await voice.disconnect()
 
 
