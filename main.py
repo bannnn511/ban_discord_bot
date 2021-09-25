@@ -24,12 +24,9 @@ async def join(ctx):
     if bot_voice and bot_voice.is_connected():
         if bot_voice.channel != author_voice.channel:
             await voice.move_to(author_voice.channel)
-            await ctx.send("Moved to the voice channel")
-
         isJoined = True
     elif author_voice and not bot_voice:  # Author connected but bot not connected
         voice = await author_voice.channel.connect()
-        await ctx.send("Connected to the voice channel")
         isJoined = True
     elif not author_voice:  # Author not connected
         await ctx.send("Get in a voice channel")
@@ -50,15 +47,20 @@ async def play(ctx, *url):
         'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
     voice = get(client.voice_clients, guild=ctx.guild)
 
+    searchKey = ' '.join(url)
     if not voice.is_playing():
-        result = ytVideoSearchLink(url)
+        result = ytVideoSearchLink(searchKey)
+        if result is None:
+            await ctx.send('Bot cannot find ' + searchKey)
+        link = result.get("link")
+        title = result.get("title")
         with YoutubeDL(YDL_OPTIONS) as ydl:
             info = ydl.extract_info(
-                result["link"], download=False)
+                link, download=False)
         URL = info['url']
         voice.play(FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
         voice.is_playing()
-        await ctx.send('Bot is playing' + result["title"])
+        await ctx.send('Bot is playing ' + title + '\n' + link)
 
 
 # check if the bot is already playing
@@ -148,9 +150,11 @@ async def on_reaction_add(reaction, user):
         await Channel.send("sup bitch")
 
 
-def ytVideoSearchLink(search):
-    videoSearch = VideosSearch(''.join(search), limit=1)
-    return videoSearch.result()["result"][0]
+def ytVideoSearchLink(search, limit=1):
+    videoSearch = VideosSearch(search, limit=1)
+    list = dict(enumerate(videoSearch.result().get("result"))).get(limit-1)
+    print(list)
+    return list
 
 
 client.run(os.environ.get('TOKEN'))
