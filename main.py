@@ -11,7 +11,7 @@ from youtubesearchpython import VideosSearch
 
 load_dotenv()
 
-client = commands.Bot(command_prefix="!")
+client = commands.Bot(command_prefix=os.environ.get('PREFIX'))
 
 
 @client.command()
