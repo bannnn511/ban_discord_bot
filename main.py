@@ -1,3 +1,4 @@
+from time import sleep
 from discord import channel, emoji, message
 from discord.ext import commands
 import discord
@@ -58,9 +59,13 @@ async def play(ctx, *url):
             info = ydl.extract_info(
                 link, download=False)
         URL = info['url']
-        voice.play(FFmpegPCMAudio(URL, **FFMPEG_OPTIONS),
-                   after=after_song_played)
+        voice.play(FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
         await ctx.send('Bot is playing ' + title + '\n' + link)
+
+        # disconnect bot after played
+        while voice.is_playing():
+            await sleep(1)
+        await voice.disconnect()
 
 
 # check if the bot is already playing
@@ -155,16 +160,6 @@ def ytVideoSearchLink(search, limit=1):
     list = dict(enumerate(videoSearch.result().get("result"))).get(limit-1)
     print(list)
     return list
-
-
-def after_song_played(error):
-    coro = vc.disconnect()
-    fut = asyncio.run_coroutine_threadsafe(coro, client.loop)
-    try:
-        fut.result()
-    except:
-        # an error happened sending the message
-        pass
 
 
 client.run(os.environ.get('TOKEN'))
