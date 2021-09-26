@@ -62,11 +62,6 @@ async def play(ctx, *url):
         voice.play(FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
         await ctx.send('Bot is playing ' + title + '\n' + link)
 
-        # disconnect bot after played
-        while voice.is_playing():
-            sleep(1)
-        await voice.disconnect()
-
 
 # check if the bot is already playing
     else:
