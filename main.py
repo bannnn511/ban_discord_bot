@@ -18,8 +18,8 @@ async def on_message(message):
     # Ignore messages made by the bot
     if(message.author == client.user):
         return
-    if (message.channel.id==975710033692209243):
-       await client.get_channel(865902462430871553).send(message.content)
+    if (message.channel.id==ANNOUCE_CHANNEL):
+       await client.get_channel(SUBSRIBED_CHANNEL).send(message.content)
 
 
 client.run(os.environ.get('TOKEN'))
